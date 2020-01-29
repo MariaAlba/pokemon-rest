@@ -25,17 +25,30 @@ public class PokemonDAO implements IDAO<Pokemon> {
 
 	@Override
 	public List<Pokemon> getAll() {
-		ArrayList<Pokemon> registros = new ArrayList<Pokemon>();
+		String sql = "SELECT " + " p.id as 'id_pokemon'," + " p.nombre as 'pokemon'," + " h.nombre as 'habilidad',"
+				+ " h.id as 'id_habilidad '" + " FROM pokemon_has_habilidades ph, pokemon p, habilidad h "
+				+ " WHERE ph.id_pokemon = p.id and ph.id_habilidad = h.id " + " ORDER BY  p.id  DESC LIMIT 500";
 
-		String SELECT_ALL = "";
+		ArrayList<Pokemon> registros = new ArrayList<Pokemon>();
 		try (Connection con = ConnectionManager.getConnection();
-				PreparedStatement pst = con.prepareStatement(SELECT_ALL);
+				PreparedStatement pst = con.prepareStatement(sql);
 				ResultSet rs = pst.executeQuery()) {
 
+			while (rs.next()) {
+				// TODO mapper
+				Pokemon p = new Pokemon();
+				p.setId(rs.getInt("id_pokemon"));
+				p.setNombre(rs.getString("pokemon"));
+
+				registros.add(p);
+			}
+
 		} catch (Exception e) {
-			// TODO log
+			// TODO: LOG
+			e.printStackTrace();
 		}
-		return null;
+
+		return registros;
 	}
 
 	@Override
