@@ -1,8 +1,15 @@
 package com.ipartek.formacion.model.pojo;
 
-public class Habilidad {
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
+public class Habilidad {
+ 
+	@NotNull
 	private int id;
+	
+	@NotNull
+	@Size(min=1, max=50)
 	private String nombre;
 
 	public Habilidad() {
