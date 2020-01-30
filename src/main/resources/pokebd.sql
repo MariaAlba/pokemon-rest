@@ -63,7 +63,7 @@ CREATE TABLE `pokemon` (
 
 LOCK TABLES `pokemon` WRITE;
 /*!40000 ALTER TABLE `pokemon` DISABLE KEYS */;
-INSERT INTO `pokemon` VALUES (4,'bulbasur'),(3,'charmander'),(1,'lucario'),(2,'pikachu');
+INSERT INTO `pokemon` VALUES (4,'bulbasur'),(3,'charmander'),(2,'pikachu');
 /*!40000 ALTER TABLE `pokemon` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -81,7 +81,7 @@ CREATE TABLE `pokemon_has_habilidades` (
   KEY `FK_pokemon_idx` (`id_pokemon`),
   KEY `FK_habilidad_idx` (`id_habilidad`),
   CONSTRAINT `FK_habilidad` FOREIGN KEY (`id_habilidad`) REFERENCES `habilidad` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `FK_pokemon` FOREIGN KEY (`id_pokemon`) REFERENCES `pokemon` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+  CONSTRAINT `FK_pokemon` FOREIGN KEY (`id_pokemon`) REFERENCES `pokemon` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -91,7 +91,7 @@ CREATE TABLE `pokemon_has_habilidades` (
 
 LOCK TABLES `pokemon_has_habilidades` WRITE;
 /*!40000 ALTER TABLE `pokemon_has_habilidades` DISABLE KEYS */;
-INSERT INTO `pokemon_has_habilidades` VALUES (1,1),(1,2),(1,3),(2,4),(2,5),(3,1),(3,3),(3,6),(4,1),(4,7);
+INSERT INTO `pokemon_has_habilidades` VALUES (2,4),(2,5),(3,1),(3,3),(3,6),(4,1),(4,7);
 /*!40000 ALTER TABLE `pokemon_has_habilidades` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -112,4 +112,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-01-29 13:19:31
+-- Dump completed on 2020-01-30 12:35:59
