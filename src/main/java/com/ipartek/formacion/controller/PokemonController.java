@@ -3,7 +3,6 @@ package com.ipartek.formacion.controller;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
@@ -19,13 +18,9 @@ import javax.validation.ValidatorFactory;
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.ipartek.formacion.model.PokemonDAO;
 import com.ipartek.formacion.model.pojo.Pokemon;
 import com.ipartek.formacion.utils.Utilidades;
-
-
 
 /**
  * Servlet implementation class PokemonController
@@ -38,16 +33,16 @@ public class PokemonController extends HttpServlet {
 	private final static Logger LOG = Logger.getLogger(PokemonController.class);
 
 	private PokemonDAO pokemonDAO;
-	
+
 	private ValidatorFactory factory;
 	private Validator validator;
-	
+
 	private String pathInfo;
 	private int statusCode;
 	Object responseBody;
-	
-	private int idPokemon;
 
+	private int idPokemon;
+	private boolean hasParams;
 
 	/**
 	 * @see Servlet#init(ServletConfig)
@@ -73,19 +68,17 @@ public class PokemonController extends HttpServlet {
 	 */
 	protected void service(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		
+
 		pathInfo = request.getPathInfo();
 		LOG.debug(request.getMethod() + " " + request.getRequestURL());
-		
-		
-		
 
 		response.setContentType("application/json");
 		response.setCharacterEncoding("utf-8");
 		responseBody = null;
-		
 
-		
+		String termino = request.getParameter("nombre");
+		hasParams = (termino != null && !termino.isEmpty()) ? true : false;
+
 		try {
 
 			idPokemon = Utilidades.obtenerId(pathInfo);
@@ -96,7 +89,6 @@ public class PokemonController extends HttpServlet {
 		} catch (Exception e) {
 
 			statusCode = HttpServletResponse.SC_BAD_REQUEST;
-			
 
 		} finally {
 
@@ -118,43 +110,42 @@ public class PokemonController extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		
-		
+
 		ArrayList<Pokemon> lista = new ArrayList<Pokemon>();
-		String termino = request.getParameter("buscar");
-		
-		if(termino!=null && !termino.isEmpty()) {
+
+		if (hasParams) {
+			String termino = request.getParameter("nombre");
 			try {
-				lista = (ArrayList<Pokemon>) pokemonDAO.searchLike(termino);
+				lista = (ArrayList<Pokemon>) pokemonDAO.searchByNameLike(termino);
+				statusCode = lista.isEmpty() ? HttpServletResponse.SC_NO_CONTENT : HttpServletResponse.SC_OK;
+				responseBody = lista;
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				statusCode = HttpServletResponse.SC_CONFLICT;
+				LOG.error(e);
+			}
+
+		} else {
+
+			try {
+
+				if (idPokemon != -1) {
+					Pokemon p = null;
+					p = pokemonDAO.getById(idPokemon);
+					statusCode = (p != null) ? HttpServletResponse.SC_OK : HttpServletResponse.SC_NOT_FOUND;
+					responseBody = p;
+				} else {
+
+					lista = (ArrayList<Pokemon>) pokemonDAO.getAll();
+					statusCode = (lista.isEmpty()) ? HttpServletResponse.SC_NO_CONTENT : HttpServletResponse.SC_OK;
+					responseBody = lista;
+
+				}
+			} catch (Exception e) {
+
 				LOG.error(e);
 			}
 		}
-		else {
-			lista = (ArrayList<Pokemon>) pokemonDAO.getAll();
-		}
-		
 
-		if (lista.isEmpty()) {
-			statusCode = HttpServletResponse.SC_NO_CONTENT;
-		} else {
-			statusCode = HttpServletResponse.SC_OK;
-			responseBody = lista;
-		}
-
-		// response body
-
-//		PrintWriter out = response.getWriter(); // out se encarga de escribir datos en el body
-//
-//		String jsonResponseBody = new Gson().toJson(lista); // conversion de java a json
-//
-//		out.print(jsonResponseBody.toString());
-//
-//		out.flush(); // termina de escribir datos en body cierra el out
-
-		
 	}
 
 	/**
