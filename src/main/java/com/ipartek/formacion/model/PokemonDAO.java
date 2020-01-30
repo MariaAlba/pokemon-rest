@@ -4,10 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -38,54 +38,21 @@ public class PokemonDAO implements IPokemonDAO {
 				+ "h.nombre AS 'habilidad'\n" + "FROM pokemon.pokemon_has_habilidades ph, pokemon p, habilidad h\n"
 				+ "WHERE ph.id_pokemon = p.id AND ph.id_habilidad = h.id\n" + "ORDER BY p.id DESC\n" + "LIMIT 500;";
 
-		ArrayList<Pokemon> registros = new ArrayList<Pokemon>();
-
 		HashMap<Integer, Pokemon> pokeHash = new HashMap<Integer, Pokemon>();
-
-		Pokemon p = null;
 
 		try (Connection con = ConnectionManager.getConnection();
 				PreparedStatement pst = con.prepareStatement(sql);
 				ResultSet rs = pst.executeQuery()) {
 
-			ArrayList<Habilidad> habilidades = new ArrayList<Habilidad>();
-
 			while (rs.next()) {
-				// TODO mapper
-
-				p = new Pokemon();
-				Habilidad h = new Habilidad();
-
-				p.setId(rs.getInt("id_pokemon"));
-				p.setNombre(rs.getString("pokemon"));
-				h.setId(rs.getInt("id_habilidad"));
-				h.setNombre(rs.getString("habilidad"));
-
-				if (pokeHash.containsKey(p.getId())) {
-
-					habilidades.add(h);
-					p.setHabilidades(habilidades);
-				} else {
-					habilidades = new ArrayList<Habilidad>();
-					habilidades.add(h);
-					p.setHabilidades(habilidades);
-					pokeHash.put(p.getId(), p);
-
-				}
-				LOG.debug(pokeHash);
-
-			}
-
-			Set<Integer> keys = pokeHash.keySet();
-			for (Integer i : keys) {
-				registros.add(pokeHash.get(i));
+				mapper(pokeHash, rs);
 			}
 
 		} catch (Exception e) {
 			LOG.error(e);
 		}
 
-		return registros;
+		return new ArrayList<Pokemon>(pokeHash.values());
 	}
 
 	@Override
@@ -96,7 +63,7 @@ public class PokemonDAO implements IPokemonDAO {
 				+ "WHERE ph.id_pokemon = p.id AND ph.id_habilidad = h.id\n" + "AND p.id = ?;";
 
 		Pokemon p = null;
-		ArrayList<Habilidad> habilidades = new ArrayList<Habilidad>();
+
 		HashMap<Integer, Pokemon> hm = new HashMap<Integer, Pokemon>();
 
 		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
@@ -108,7 +75,7 @@ public class PokemonDAO implements IPokemonDAO {
 			ResultSet rs = pst.executeQuery();
 
 			while (rs.next()) {
-				p = mapper(rs);
+				p = mapper(hm, rs);
 			}
 
 		} catch (Exception e) {
@@ -120,24 +87,6 @@ public class PokemonDAO implements IPokemonDAO {
 	}
 
 	@Override
-	public Pokemon delete(int id) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Pokemon update(int id, Pokemon pojo) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Pokemon create(Pokemon pojo) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public ArrayList<Pokemon> searchByNameLike(String termino) throws Exception {
 
 		String sql = "SELECT \n" + "p.id AS 'id_pokemon',\n" + "p.nombre AS 'pokemon',\n" + "h.id AS 'id_habilidad',\n"
@@ -145,7 +94,7 @@ public class PokemonDAO implements IPokemonDAO {
 				+ "WHERE ph.id_pokemon = p.id AND ph.id_habilidad = h.id\n" + " AND p.nombre LIKE ? "
 				+ " ORDER BY p.id DESC\n" + "LIMIT 500;";
 
-		ArrayList<Pokemon> registros = new ArrayList<Pokemon>();
+		HashMap<Integer, Pokemon> pokeHash = new HashMap<Integer, Pokemon>();
 
 		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
 
@@ -155,46 +104,69 @@ public class PokemonDAO implements IPokemonDAO {
 
 			ResultSet rs = pst.executeQuery();
 
-			HashMap<Integer, Pokemon> pokeHash = new HashMap<Integer, Pokemon>();
-
-			ArrayList<Habilidad> habilidades = new ArrayList<Habilidad>();
-
 			while (rs.next()) {
-				// TODO mapper
-
-				Pokemon p = new Pokemon();
-				Habilidad h = new Habilidad();
-
-				p.setId(rs.getInt("id_pokemon"));
-				p.setNombre(rs.getString("pokemon"));
-				h.setId(rs.getInt("id_habilidad"));
-				h.setNombre(rs.getString("habilidad"));
-
-				if (pokeHash.containsKey(p.getId())) {
-
-					habilidades.add(h);
-					p.setHabilidades(habilidades);
-				} else {
-					habilidades = new ArrayList<Habilidad>();
-					habilidades.add(h);
-					p.setHabilidades(habilidades);
-					pokeHash.put(p.getId(), p);
-
-				}
-				LOG.debug(pokeHash);
-
-			}
-
-			Set<Integer> keys = pokeHash.keySet();
-			for (Integer i : keys) {
-				registros.add(pokeHash.get(i));
+				mapper(pokeHash, rs);
 			}
 
 		} catch (Exception e) {
 			LOG.error(e);
 		}
 
-		return registros;
+		return new ArrayList<Pokemon>(pokeHash.values());
+	}
+
+	@Override
+	public Pokemon delete(int id) throws Exception {
+		String sql = "DELETE FROM pokemon where id = ?;";
+
+		Pokemon p = null;
+
+		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
+
+			pst.setInt(1, id);
+
+			p = this.getById(id); // recuperar
+
+			int affectedRows = pst.executeUpdate(); // eliminar
+
+			if (affectedRows != 1) {
+				p = null;
+				throw new Exception("No se puede eliminar " + p);
+			}
+
+		}
+
+		return p;
+	}
+
+	@Override
+	public Pokemon create(Pokemon pojo) throws Exception {
+
+		String sql = "INSERT INTO pokemon (nombre) VALUES (?);";
+		try (Connection con = ConnectionManager.getConnection();
+				PreparedStatement pst = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+			pst.setString(1, pojo.getNombre());
+
+			int affectedRows = pst.executeUpdate();
+			if (affectedRows == 1) {
+				// conseguimos el ID que acabamos de crear
+				ResultSet rs = pst.getGeneratedKeys();
+				if (rs.next()) {
+					pojo.setId(rs.getInt(1));
+				}
+
+			}
+
+		}
+
+		return pojo;
+	}
+
+	@Override
+	public Pokemon update(int id, Pokemon pojo) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	/**
@@ -204,35 +176,23 @@ public class PokemonDAO implements IPokemonDAO {
 	 * @return
 	 * @throws SQLException
 	 */
-	private Pokemon mapper(ResultSet rs) throws SQLException {
+	private Pokemon mapper(HashMap<Integer, Pokemon> hm, ResultSet rs) throws Exception {
 
-		HashMap<Integer, Pokemon> pokeHash = new HashMap<Integer, Pokemon>();
-
-		ArrayList<Habilidad> habilidades = new ArrayList<Habilidad>();
-
-		Pokemon p = null;
+		int idPokemon = rs.getInt("id_pokemon");
+		Pokemon p = hm.get(idPokemon);
+		if (p == null) {
+			p = new Pokemon();
+			p.setId(idPokemon);
+			p.setNombre(rs.getString("pokemon"));
+		}
 
 		Habilidad h = new Habilidad();
+		h.setId(rs.getInt("id_habilidad"));
+		h.setNombre(rs.getString("habilidad"));
 
-		while (rs.next()) {
+		p.getHabilidades().add(h);
 
-			p = new Pokemon();
-			p.setId(rs.getInt("id_pokemon"));
-			p.setNombre(rs.getString("pokemon"));
-			h.setId(rs.getInt("id_habilidad"));
-			h.setNombre(rs.getString("habilidad"));
-
-			if (pokeHash.containsKey(p.getId())) {
-				habilidades.add(h);
-				p.setHabilidades(habilidades);
-			} else {
-				habilidades = new ArrayList<Habilidad>();
-				habilidades.add(h);
-				p.setHabilidades(habilidades);
-				pokeHash.put(p.getId(), p);
-			}
-
-		}
+		hm.put(idPokemon, p);
 
 		return p;
 	}

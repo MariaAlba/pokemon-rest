@@ -21,6 +21,7 @@ import com.google.gson.Gson;
 import com.ipartek.formacion.model.PokemonDAO;
 import com.ipartek.formacion.model.pojo.Pokemon;
 import com.ipartek.formacion.utils.Utilidades;
+import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 
 /**
  * Servlet implementation class PokemonController
@@ -154,8 +155,15 @@ public class PokemonController extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		doGet(request, response);
+
+		Pokemon p = null;
+		try {
+			pokemonDAO.create(p);
+		} catch (MySQLIntegrityConstraintViolationException e) {
+
+		} catch (Exception e) {
+
+		}
 	}
 
 	/**
@@ -171,7 +179,24 @@ public class PokemonController extends HttpServlet {
 	 */
 	protected void doDelete(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		// TODO Auto-generated method stub
+
+		Pokemon p = null;
+
+		// TODO como mostrar el pokemon cuando no tiene habilidades
+		// mirar inner join del get by id
+
+		try {
+
+			p = pokemonDAO.delete(idPokemon);
+			statusCode = HttpServletResponse.SC_OK;
+			responseBody = p;
+
+		} catch (Exception e) {
+			statusCode = HttpServletResponse.SC_NOT_FOUND;
+			responseBody = null;
+			LOG.error(e);
+		}
+
 	}
 
 }
