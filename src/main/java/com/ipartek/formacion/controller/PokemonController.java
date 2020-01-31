@@ -1,8 +1,10 @@
 package com.ipartek.formacion.controller;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Set;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
@@ -11,6 +13,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
@@ -19,6 +22,7 @@ import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
 import com.ipartek.formacion.model.PokemonDAO;
+import com.ipartek.formacion.model.pojo.MensajeResponse;
 import com.ipartek.formacion.model.pojo.Pokemon;
 import com.ipartek.formacion.utils.Utilidades;
 import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
@@ -156,13 +160,46 @@ public class PokemonController extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
-		Pokemon p = null;
+		Pokemon pOut = null;
 		try {
-			pokemonDAO.create(p);
+			// convertir json del request body a Objeto
+			BufferedReader reader = request.getReader();
+			Gson gson = new Gson();
+			Pokemon p = gson.fromJson(reader, Pokemon.class);
+			LOG.debug("pokemon p: " + p);
+
+			// validar objeto
+			Set<ConstraintViolation<Pokemon>> validacionesErrores = validator.validate(p);
+
+			if (validacionesErrores.isEmpty()) {
+				if (p.getId() == 0) {
+					pOut = pokemonDAO.create(p);
+					statusCode = HttpServletResponse.SC_CREATED;
+				} else {
+					pOut = pokemonDAO.update(p.getId(), p);
+					statusCode = HttpServletResponse.SC_OK;
+				}
+
+			} else {
+				MensajeResponse responseMensaje = new MensajeResponse("Valores no correctos");
+				ArrayList<String> errores = new ArrayList<String>();
+
+				statusCode = HttpServletResponse.SC_BAD_REQUEST;
+
+				for (ConstraintViolation<Pokemon> error : validacionesErrores) {
+					errores.add(error.getPropertyPath() + " " + error.getMessage());
+				}
+				responseMensaje.setErrores(errores);
+
+				responseBody = responseMensaje;
+			}
 		} catch (MySQLIntegrityConstraintViolationException e) {
+			statusCode = HttpServletResponse.SC_CONFLICT;
+			responseBody = new MensajeResponse(e.getMessage());
 
 		} catch (Exception e) {
-
+			statusCode = HttpServletResponse.SC_BAD_REQUEST;
+			responseBody = new MensajeResponse(e.getMessage());
 		}
 	}
 
