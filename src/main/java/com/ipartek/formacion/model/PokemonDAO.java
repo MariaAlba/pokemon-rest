@@ -34,9 +34,10 @@ public class PokemonDAO implements IPokemonDAO {
 	@Override
 	public List<Pokemon> getAll() {
 
-		String sql = "SELECT \n" + "p.id AS 'id_pokemon',\n" + "p.nombre AS 'pokemon',\n" + "h.id AS 'id_habilidad',\n"
-				+ "h.nombre AS 'habilidad'\n" + "FROM pokemon.pokemon_has_habilidades ph, pokemon p, habilidad h\n"
-				+ "WHERE ph.id_pokemon = p.id AND ph.id_habilidad = h.id\n" + "ORDER BY p.id DESC\n" + "LIMIT 500;";
+		String sql = "SELECT \r\n" + "p.id AS 'id_pokemon',\r\n" + "p.nombre AS 'pokemon',\r\n"
+				+ "h.id AS 'id_habilidad',\r\n" + "h.nombre AS 'habilidad'\r\n"
+				+ "FROM pokemon.pokemon_has_habilidades ph \r\n" + "RIGHT JOIN pokemon p ON ph.id_pokemon = p.id \r\n"
+				+ "LEFT JOIN habilidad h ON ph.id_habilidad = h.id ORDER BY p.id DESC LIMIT 500;";
 
 		HashMap<Integer, Pokemon> pokeHash = new HashMap<Integer, Pokemon>();
 
@@ -166,7 +167,26 @@ public class PokemonDAO implements IPokemonDAO {
 	@Override
 	public Pokemon update(int id, Pokemon pojo) throws Exception {
 		// TODO Auto-generated method stub
-		return null;
+		String sql = "UPDATE pokemon SET nombre = ? WHERE id = ?;";
+
+		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
+
+			pst.setString(1, pojo.getNombre());
+			pst.setInt(2, id);
+
+			LOG.debug(pst);
+
+			int affectedRows = pst.executeUpdate(); // lanza una excepcion si nombre
+
+			if (affectedRows == 1) {
+				pojo.setId(id);
+			} else {
+				throw new Exception("No se encontro registro para id=" + id);
+			}
+		}
+
+		return pojo;
+
 	}
 
 	/**
