@@ -175,9 +175,11 @@ public class PokemonController extends HttpServlet {
 				if (p.getId() == 0) {
 					pOut = pokemonDAO.create(p);
 					statusCode = HttpServletResponse.SC_CREATED;
+
 				} else {
 					pOut = pokemonDAO.update(p.getId(), p);
 					statusCode = HttpServletResponse.SC_OK;
+
 				}
 
 			} else {

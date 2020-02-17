@@ -41,6 +41,7 @@ public class PokemonDAO implements IPokemonDAO {
 
 		HashMap<Integer, Pokemon> pokeHash = new HashMap<Integer, Pokemon>();
 
+		LOG.debug(sql);
 		try (Connection con = ConnectionManager.getConnection();
 				PreparedStatement pst = con.prepareStatement(sql);
 				ResultSet rs = pst.executeQuery()) {
@@ -210,7 +211,9 @@ public class PokemonDAO implements IPokemonDAO {
 		h.setId(rs.getInt("id_habilidad"));
 		h.setNombre(rs.getString("habilidad"));
 
-		p.getHabilidades().add(h);
+		if (h.getId() != 0) {
+			p.getHabilidades().add(h);
+		}
 
 		hm.put(idPokemon, p);
 
