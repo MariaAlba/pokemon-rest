@@ -3,6 +3,7 @@ package com.ipartek.formacion.controller;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Set;
 
@@ -175,11 +176,12 @@ public class PokemonController extends HttpServlet {
 				if (p.getId() == 0) {
 					pOut = pokemonDAO.create(p);
 					statusCode = HttpServletResponse.SC_CREATED;
+					responseBody = pOut;
 
 				} else {
 					pOut = pokemonDAO.update(p.getId(), p);
 					statusCode = HttpServletResponse.SC_OK;
-
+					responseBody = pOut;
 				}
 
 			} else {
@@ -199,9 +201,21 @@ public class PokemonController extends HttpServlet {
 			statusCode = HttpServletResponse.SC_CONFLICT;
 			responseBody = new MensajeResponse(e.getMessage());
 
+		} catch (SQLException e) {
+			statusCode = HttpServletResponse.SC_CONFLICT;
+			// entra con nombre repetido
+			String texto = "Nombre del pokemon ";
+			responseBody = new MensajeResponse(texto + " - " + e.getMessage());
 		} catch (Exception e) {
-			statusCode = HttpServletResponse.SC_BAD_REQUEST;
-			responseBody = new MensajeResponse(e.getMessage());
+			statusCode = HttpServletResponse.SC_CONFLICT;
+			String texto = e.getMessage();
+			if (texto.contains("nombre_UNIQUE")) {
+				texto = "El nombre del pokemon ya existe";
+			}
+			if (texto.contains("habilidad")) {
+				texto = "No puede añadir una habilidad inexistente";
+			}
+			responseBody = new MensajeResponse(texto);
 		}
 	}
 

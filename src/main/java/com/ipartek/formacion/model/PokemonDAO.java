@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 
 import com.ipartek.formacion.model.pojo.Habilidad;
 import com.ipartek.formacion.model.pojo.Pokemon;
+import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 
 public class PokemonDAO implements IPokemonDAO {
 
@@ -145,8 +146,16 @@ public class PokemonDAO implements IPokemonDAO {
 	public Pokemon create(Pokemon pojo) throws Exception {
 
 		String sql = "INSERT INTO pokemon (nombre) VALUES (?);";
-		try (Connection con = ConnectionManager.getConnection();
-				PreparedStatement pst = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+		Connection con = null;
+
+		try {
+
+			con = ConnectionManager.getConnection();
+			con.setAutoCommit(false);
+
+			// Insert en tabla pokemon + obtener id generado
+			PreparedStatement pst = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
 			pst.setString(1, pojo.getNombre());
 
@@ -157,9 +166,37 @@ public class PokemonDAO implements IPokemonDAO {
 				if (rs.next()) {
 					pojo.setId(rs.getInt(1));
 				}
+			}
+
+			ArrayList<Habilidad> habilidades = pojo.getHabilidades();
+			String sql2 = "INSERT INTO pokemon_has_habilidades (id_pokemon, id_habilidad) VALUES (?, ?)";
+			PreparedStatement pst2 = con.prepareStatement(sql2, Statement.RETURN_GENERATED_KEYS);
+			pst2.setInt(1, pojo.getId());
+
+			if (habilidades.size() > 0) {
+
+				// por cada habilidad (si las tiene)
+				// insert tabla pokemon_has_habilidades
+				for (Habilidad h : habilidades) {
+					pst2.setInt(2, h.getId());
+					int affectedRows2 = pst2.executeUpdate();
+				}
 
 			}
 
+			// SI TODO OK
+			con.commit();
+
+		} catch (MySQLIntegrityConstraintViolationException e) {
+			throw e;
+		} catch (Exception e) {
+			con.rollback();
+			throw new Exception(e);
+		} finally {
+			// cierra conexion
+			if (con != null) {
+				con.close();
+			}
 		}
 
 		return pojo;
