@@ -82,7 +82,7 @@ public class UsuarioDAO implements IUsuarioDAO {
 
 	public Usuario isLogged(String nombre, String pass) {
 
-		String sql = "SELECT id, nombre, password FROM pokemon WHERE nombre = ?  AND password = ?;";
+		String sql = "SELECT id, nombre, password FROM usuario WHERE nombre = ?  AND password = ?;";
 
 		Usuario u = null;
 
