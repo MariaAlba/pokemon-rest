@@ -17,12 +17,16 @@ public class Pokemon {
 	@Size(min = 1, max = 50)
 	private String nombre;
 
+	@NotNull
+	private String imagen;
+
 	private ArrayList<Habilidad> habilidades;
 
 	public Pokemon() {
 		super();
 		this.id = 0;
 		this.nombre = "";
+		this.imagen = "https://f0.pngfuel.com/png/295/911/pokemon-pokeball-png-clip-art.png";
 		this.habilidades = new ArrayList<Habilidad>();
 	}
 
@@ -42,6 +46,14 @@ public class Pokemon {
 		this.nombre = nombre;
 	}
 
+	public String getImagen() {
+		return imagen;
+	}
+
+	public void setImagen(String imagen) {
+		this.imagen = imagen;
+	}
+
 	public ArrayList<Habilidad> getHabilidades() {
 		return habilidades;
 	}
@@ -52,7 +64,7 @@ public class Pokemon {
 
 	@Override
 	public String toString() {
-		return "Pokemon [id=" + id + ", nombre=" + nombre + ", habilidades=" + habilidades + "]";
+		return "Pokemon [id=" + id + ", nombre=" + nombre + ", imagen=" + imagen + ", habilidades=" + habilidades + "]";
 	}
 
 }

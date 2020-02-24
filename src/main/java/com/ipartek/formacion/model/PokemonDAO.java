@@ -36,7 +36,7 @@ public class PokemonDAO implements IPokemonDAO {
 	public List<Pokemon> getAll() {
 
 		String sql = "SELECT \r\n" + "p.id AS 'id_pokemon',\r\n" + "p.nombre AS 'pokemon',\r\n"
-				+ "h.id AS 'id_habilidad',\r\n" + "h.nombre AS 'habilidad'\r\n"
+				+ "p.imagen AS 'imagen',\r\n" + "h.id AS 'id_habilidad',\r\n" + "h.nombre AS 'habilidad'\r\n"
 				+ "FROM pokemon.pokemon_has_habilidades ph \r\n" + "RIGHT JOIN pokemon p ON ph.id_pokemon = p.id \r\n"
 				+ "LEFT JOIN habilidad h ON ph.id_habilidad = h.id ORDER BY p.id DESC LIMIT 500;";
 
@@ -61,8 +61,9 @@ public class PokemonDAO implements IPokemonDAO {
 	@Override
 	public Pokemon getById(int id) {
 
-		String sql = "SELECT \n" + "p.id AS 'id_pokemon',\n" + "p.nombre AS 'pokemon',\n" + "h.id AS 'id_habilidad',\n"
-				+ "h.nombre AS 'habilidad'\n" + "FROM pokemon.pokemon_has_habilidades ph, pokemon p, habilidad h\n"
+		String sql = "SELECT \n" + "p.id AS 'id_pokemon',\n" + "p.nombre AS 'pokemon',\n" + "p.imagen AS 'imagen',\n"
+				+ "h.id AS 'id_habilidad',\n" + "h.nombre AS 'habilidad'\n"
+				+ "FROM pokemon.pokemon_has_habilidades ph, pokemon p, habilidad h\n"
 				+ "WHERE ph.id_pokemon = p.id AND ph.id_habilidad = h.id\n" + "AND p.id = ?;";
 
 		Pokemon p = null;
@@ -92,8 +93,9 @@ public class PokemonDAO implements IPokemonDAO {
 	@Override
 	public ArrayList<Pokemon> searchByNameLike(String termino) throws Exception {
 
-		String sql = "SELECT \n" + "p.id AS 'id_pokemon',\n" + "p.nombre AS 'pokemon',\n" + "h.id AS 'id_habilidad',\n"
-				+ "h.nombre AS 'habilidad'\n" + "FROM pokemon.pokemon_has_habilidades ph, pokemon p, habilidad h\n"
+		String sql = "SELECT \n" + "p.id AS 'id_pokemon',\n" + "p.nombre AS 'pokemon',\n" + "p.imagen AS 'imagen',\n"
+				+ "h.id AS 'id_habilidad',\n" + "h.nombre AS 'habilidad'\n"
+				+ "FROM pokemon.pokemon_has_habilidades ph, pokemon p, habilidad h\n"
 				+ "WHERE ph.id_pokemon = p.id AND ph.id_habilidad = h.id\n" + " AND p.nombre LIKE ? "
 				+ " ORDER BY p.id DESC\n" + "LIMIT 500;";
 
@@ -145,7 +147,7 @@ public class PokemonDAO implements IPokemonDAO {
 	@Override
 	public Pokemon create(Pokemon pojo) throws Exception {
 
-		String sql = "INSERT INTO pokemon (nombre) VALUES (?);";
+		String sql = "INSERT INTO pokemon (nombre, imagen) VALUES (?,?);";
 
 		Connection con = null;
 
@@ -158,6 +160,7 @@ public class PokemonDAO implements IPokemonDAO {
 			PreparedStatement pst = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
 			pst.setString(1, pojo.getNombre());
+			pst.setString(2, pojo.getImagen());
 
 			int affectedRows = pst.executeUpdate();
 			if (affectedRows == 1) {
@@ -202,24 +205,84 @@ public class PokemonDAO implements IPokemonDAO {
 		return pojo;
 	}
 
-	@Override
-	public Pokemon update(int id, Pokemon pojo) throws Exception {
-		// TODO Auto-generated method stub
-		String sql = "UPDATE pokemon SET nombre = ? WHERE id = ?;";
+	private void borrarHabilidades(int idPokemon) throws SQLException {
+		boolean correcto;
+		String sql = "DELETE FROM  pokemon_has_habilidades  WHERE id_pokemon = ?";
 
 		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
 
+			pst.setInt(1, idPokemon);
+
+			int affectedRows = pst.executeUpdate(); // eliminar
+
+			if (affectedRows != 1) {
+
+			}
+
+		}
+
+	}
+
+	@Override
+	public Pokemon update(int id, Pokemon pojo) throws Exception {
+
+		borrarHabilidades(id);
+
+		String sql = "UPDATE pokemon SET nombre = ?, imagen = ?  WHERE id = ?;";
+
+		Connection con = null;
+
+		try {
+
+			con = ConnectionManager.getConnection();
+			con.setAutoCommit(false);
+
+			PreparedStatement pst = con.prepareStatement(sql);
+
 			pst.setString(1, pojo.getNombre());
-			pst.setInt(2, id);
+			pst.setString(2, pojo.getImagen());
+			pst.setInt(3, id);
 
 			LOG.debug(pst);
 
-			int affectedRows = pst.executeUpdate(); // lanza una excepcion si nombre
-
+			int affectedRows = pst.executeUpdate();
 			if (affectedRows == 1) {
 				pojo.setId(id);
 			} else {
 				throw new Exception("No se encontro registro para id=" + id);
+			}
+
+			ArrayList<Habilidad> habilidades = pojo.getHabilidades();
+			String sql3 = "INSERT INTO pokemon_has_habilidades (id_pokemon, id_habilidad) VALUES (?, ?)";
+			PreparedStatement pst3 = con.prepareStatement(sql3);
+			pst3.setInt(1, pojo.getId());
+
+			if (habilidades.size() > 0) {
+
+				// por cada habilidad (si las tiene)
+				// insert tabla pokemon_has_habilidades
+				for (Habilidad h : habilidades) {
+					if (h != null) {
+
+						pst3.setInt(2, h.getId());
+						int affectedRows3 = pst3.executeUpdate();
+					}
+				}
+
+			}
+
+			// SI TODO OK
+			con.commit();
+
+		} catch (MySQLIntegrityConstraintViolationException e) {
+			throw e;
+		} catch (Exception e) {
+			con.rollback();
+			throw new Exception(e);
+		} finally {
+			// cierra conexion
+			if (con != null) {
+				con.close();
 			}
 		}
 
@@ -242,6 +305,7 @@ public class PokemonDAO implements IPokemonDAO {
 			p = new Pokemon();
 			p.setId(idPokemon);
 			p.setNombre(rs.getString("pokemon"));
+			p.setImagen(rs.getString("imagen"));
 		}
 
 		Habilidad h = new Habilidad();
