@@ -8,3 +8,4 @@
 <p>Busqueda por nombre pokemon GET <a target="_blank" href="${pageContext.request.contextPath}/api/pokemon/?nombre=pi">/api/pokemon/?nombre=pi</a>
 
 <p>Listado habilidadd GET <a target="_blank" href="${pageContext.request.contextPath}/api/habilidad/">/api/habilidad/</a>
+<p>Listado usuario GET <a target="_blank" href="${pageContext.request.contextPath}/api/usuario/">/api/usuario/</a>
