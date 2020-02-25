@@ -187,7 +187,7 @@ public class PokemonDAO implements IPokemonDAO {
 
 			}
 
-			// SI TODO OK
+			// SI Todas las cosas OK
 			con.commit();
 
 		} catch (MySQLIntegrityConstraintViolationException e) {
@@ -271,7 +271,7 @@ public class PokemonDAO implements IPokemonDAO {
 
 			}
 
-			// SI TODO OK
+			// SI todas las cosas OK
 			con.commit();
 
 		} catch (MySQLIntegrityConstraintViolationException e) {

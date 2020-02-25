@@ -43,9 +43,9 @@ public class PokemonController extends HttpServlet {
 	private ValidatorFactory factory;
 	private Validator validator;
 
-	private static String pathInfo;
-	private static int statusCode;
-	private static Object responseBody;
+	String pathInfo;
+	int statusCode;
+	Object responseBody;
 
 	private int idPokemon;
 	private boolean hasParams;
@@ -234,9 +234,6 @@ public class PokemonController extends HttpServlet {
 			throws ServletException, IOException {
 
 		Pokemon p = null;
-
-		// TODO como mostrar el pokemon cuando no tiene habilidades
-		// mirar inner join del get by id
 
 		try {
 
