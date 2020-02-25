@@ -19,10 +19,7 @@
 		<javax.servlet.jstl.version>1.2</javax.servlet.jstl.version>
 		
 	
-  <sonar.projectKey>MariaAlba_pokemon-rest</sonar.projectKey>
-  <sonar.organization>mariaalba</sonar.organization>
-  <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-  <sonar.login>a56e2f02755962478873b1c7801240f0c45460f9</sonar.login>
+
 
 		
 		
