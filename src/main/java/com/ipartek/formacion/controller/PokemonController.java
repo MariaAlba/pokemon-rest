@@ -43,9 +43,9 @@ public class PokemonController extends HttpServlet {
 	private ValidatorFactory factory;
 	private Validator validator;
 
-	private String pathInfo;
-	private int statusCode;
-	Object responseBody;
+	private static String pathInfo;
+	private static int statusCode;
+	private static Object responseBody;
 
 	private int idPokemon;
 	private boolean hasParams;
