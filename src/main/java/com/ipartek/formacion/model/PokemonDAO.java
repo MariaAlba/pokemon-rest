@@ -37,7 +37,7 @@ public class PokemonDAO implements IPokemonDAO {
 
 		String sql = "SELECT \r\n" + "p.id AS 'id_pokemon',\r\n" + "p.nombre AS 'pokemon',\r\n"
 				+ "p.imagen AS 'imagen',\r\n" + "h.id AS 'id_habilidad',\r\n" + "h.nombre AS 'habilidad'\r\n"
-				+ "FROM pokemon.pokemon_has_habilidades ph \r\n" + "RIGHT JOIN pokemon p ON ph.id_pokemon = p.id \r\n"
+				+ "FROM pokemon_has_habilidades ph \r\n" + "RIGHT JOIN pokemon p ON ph.id_pokemon = p.id \r\n"
 				+ "LEFT JOIN habilidad h ON ph.id_habilidad = h.id ORDER BY p.id DESC LIMIT 500;";
 
 		HashMap<Integer, Pokemon> pokeHash = new HashMap<Integer, Pokemon>();
@@ -66,7 +66,7 @@ public class PokemonDAO implements IPokemonDAO {
 
 		String sql = "SELECT \n" + "p.id AS 'id_pokemon',\n" + "p.nombre AS 'pokemon',\n" + "p.imagen AS 'imagen',\n"
 				+ "h.id AS 'id_habilidad',\n" + "h.nombre AS 'habilidad'\n"
-				+ "FROM pokemon.pokemon_has_habilidades ph, pokemon p, habilidad h\n"
+				+ "FROM pokemon_has_habilidades ph, pokemon p, habilidad h\n"
 				+ "WHERE ph.id_pokemon = p.id AND ph.id_habilidad = h.id\n" + "AND p.id = ?;";
 
 		Pokemon p = null;
@@ -98,7 +98,7 @@ public class PokemonDAO implements IPokemonDAO {
 
 		String sql = "SELECT \n" + "p.id AS 'id_pokemon',\n" + "p.nombre AS 'pokemon',\n" + "p.imagen AS 'imagen',\n"
 				+ "h.id AS 'id_habilidad',\n" + "h.nombre AS 'habilidad'\n"
-				+ "FROM pokemon.pokemon_has_habilidades ph, pokemon p, habilidad h\n"
+				+ "FROM pokemon_has_habilidades ph, pokemon p, habilidad h\n"
 				+ "WHERE ph.id_pokemon = p.id AND ph.id_habilidad = h.id\n" + " AND p.nombre LIKE ? "
 				+ " ORDER BY p.id DESC\n" + "LIMIT 500;";
 
@@ -209,7 +209,7 @@ public class PokemonDAO implements IPokemonDAO {
 	}
 
 	private void borrarHabilidades(int idPokemon) throws SQLException {
-		boolean correcto;
+
 		String sql = "DELETE FROM  pokemon_has_habilidades  WHERE id_pokemon = ?";
 
 		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
