@@ -30,7 +30,7 @@ public class HabilidadController extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
-	private final static Logger LOG = Logger.getLogger(HabilidadController.class);
+	private static final Logger LOG = Logger.getLogger(HabilidadController.class);
 
 	private HabilidadDAO habilidadDAO;
 
@@ -47,6 +47,7 @@ public class HabilidadController extends HttpServlet {
 	/**
 	 * @see Servlet#init(ServletConfig)
 	 */
+	@Override
 	public void init(ServletConfig config) throws ServletException {
 		habilidadDAO = HabilidadDAO.getInstance();
 		factory = Validation.buildDefaultValidatorFactory();
@@ -56,6 +57,7 @@ public class HabilidadController extends HttpServlet {
 	/**
 	 * @see Servlet#destroy()
 	 */
+	@Override
 	public void destroy() {
 		habilidadDAO = null;
 		factory = null;
@@ -66,6 +68,7 @@ public class HabilidadController extends HttpServlet {
 	 * @see HttpServlet#service(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
+	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
@@ -108,6 +111,7 @@ public class HabilidadController extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
+	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		ArrayList<Habilidad> listado = new ArrayList<Habilidad>();
@@ -135,6 +139,7 @@ public class HabilidadController extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
+	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
@@ -144,6 +149,7 @@ public class HabilidadController extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPut(HttpServletRequest, HttpServletResponse)
 	 */
+	@Override
 	protected void doPut(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
@@ -152,6 +158,7 @@ public class HabilidadController extends HttpServlet {
 	/**
 	 * @see HttpServlet#doDelete(HttpServletRequest, HttpServletResponse)
 	 */
+	@Override
 	protected void doDelete(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub

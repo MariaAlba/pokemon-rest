@@ -34,6 +34,7 @@ public class LoginController extends HttpServlet {
 	/**
 	 * @see Servlet#init(ServletConfig)
 	 */
+	@Override
 	public void init(ServletConfig config) throws ServletException {
 		usuarioDAO = UsuarioDAO.getInstance();
 	}
@@ -41,6 +42,7 @@ public class LoginController extends HttpServlet {
 	/**
 	 * @see Servlet#destroy()
 	 */
+	@Override
 	public void destroy() {
 		usuarioDAO = null;
 	}
@@ -49,6 +51,7 @@ public class LoginController extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
+	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		HttpSession session = request.getSession();
@@ -64,6 +67,7 @@ public class LoginController extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
+	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		BufferedReader reader = request.getReader();
@@ -83,6 +87,7 @@ public class LoginController extends HttpServlet {
 			session.setAttribute("usuarioStorage", usuarioLogeado);
 			session.setMaxInactiveInterval(600);
 
+			LOG.debug(usuarioLogeado);
 			responseBody = usuarioLogeado;
 
 			response.setStatus(HttpServletResponse.SC_OK);

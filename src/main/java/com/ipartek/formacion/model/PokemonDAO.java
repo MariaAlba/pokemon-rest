@@ -43,9 +43,12 @@ public class PokemonDAO implements IPokemonDAO {
 		HashMap<Integer, Pokemon> pokeHash = new HashMap<Integer, Pokemon>();
 
 		LOG.debug(sql);
+
 		try (Connection con = ConnectionManager.getConnection();
 				PreparedStatement pst = con.prepareStatement(sql);
 				ResultSet rs = pst.executeQuery()) {
+
+			LOG.debug(pst);
 
 			while (rs.next()) {
 				mapper(pokeHash, rs);
